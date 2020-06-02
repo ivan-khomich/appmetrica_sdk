@@ -4,5 +4,5 @@
 
 #import <Flutter/Flutter.h>
 
-@interface AppmetricaSdkPlugin : NSObject<FlutterPlugin>
+@interface AppmetricaSdkPlugin : NSObject<FlutterPlugin, FlutterAppLifeCycleProvider>
 @end

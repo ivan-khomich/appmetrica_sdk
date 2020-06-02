@@ -26,6 +26,7 @@ import com.yandex.metrica.profile.Attribute;
 import com.yandex.metrica.profile.StringAttribute;
 import com.yandex.metrica.profile.UserProfile;
 import com.yandex.metrica.profile.UserProfileUpdate;
+import com.yandex.metrica.push.YandexMetricaPush;
 
 /** AppmetricaSdkPlugin */
 public class AppmetricaSdkPlugin implements MethodCallHandler {
@@ -42,6 +43,7 @@ public class AppmetricaSdkPlugin implements MethodCallHandler {
     private AppmetricaSdkPlugin(Registrar registrar) {
         this.mContext = registrar.activity().getApplicationContext();
         this.mApplication = registrar.activity().getApplication();
+
     }
 
     @Override
@@ -86,6 +88,9 @@ public class AppmetricaSdkPlugin implements MethodCallHandler {
             case "reportReferralUrl":
                 handleReportReferralUrl(call, result);
                 break;
+            case "registerRemoteNotifications":
+                registerForRemoteNotifications(call, result);
+                break;
             default:
               result.notImplemented();
               break;
@@ -114,6 +119,7 @@ public class AppmetricaSdkPlugin implements MethodCallHandler {
                     .build();
             // Initializing the AppMetrica SDK.
             YandexMetrica.activate(mContext, config);
+            YandexMetricaPush.init(this.mContext);
             // Automatic tracking of user activity.
             YandexMetrica.enableActivityAutoTracking(mApplication);
         } catch (Exception e) {
@@ -323,6 +329,11 @@ public class AppmetricaSdkPlugin implements MethodCallHandler {
             Log.e(TAG, e.getMessage(), e);
             result.error("Error sets the ID of the user profile", e.getMessage(), null);
         }
+
+        result.success(null);
+    }
+
+    private void registerForRemoteNotifications(MethodCall call, Result result) {
 
         result.success(null);
     }

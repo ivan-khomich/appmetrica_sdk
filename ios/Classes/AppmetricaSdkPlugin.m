@@ -5,6 +5,13 @@
 #import "AppmetricaSdkPlugin.h"
 #import <YandexMobileMetrica/YandexMobileMetrica.h>
 #import <YandexMobileMetrica/YMMProfileAttribute.h>
+#import <YandexMobileMetricaPush/YandexMobileMetricaPush.h>
+
+@interface AppmetricaSdkPlugin() {
+    BOOL isEnabledPushNotifications;
+}
+
+@end
 
 @implementation AppmetricaSdkPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -12,7 +19,17 @@
       methodChannelWithName:@"emallstudio.com/appmetrica_sdk"
             binaryMessenger:[registrar messenger]];
   AppmetricaSdkPlugin* instance = [[AppmetricaSdkPlugin alloc] init];
-  [registrar addMethodCallDelegate:instance channel:channel];
+    [registrar addMethodCallDelegate:instance channel:channel];
+    [registrar addApplicationDelegate:instance];
+    
+}
+
+-(id)init {
+    self = [super init];
+    if(self) {
+        isEnabledPushNotifications = NO;
+    }
+    return self;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -42,6 +59,8 @@
       [self handleSendEventsBuffer:call result:result];
   } else if ([@"reportReferralUrl" isEqualToString:call.method]) {
       [self handleReportReferralUrl:call result:result];
+  } else if([call.method isEqualToString:@"registerForRemoteNotifications"]) {
+      [self registerForRemoteNotifications:call result:result];
   } else {
       result(FlutterMethodNotImplemented);
   }
@@ -74,6 +93,7 @@
     //configuration.maxReportsInDatabaseCount = maxReportsInDatabaseCount;
     // Initializing the AppMetrica SDK.
     [YMMYandexMetrica activateWithConfiguration:configuration];
+    
     result(nil);
 }
 
@@ -238,6 +258,83 @@
     [YMMYandexMetrica reportReferralUrl:url];
 
     result(nil);
+}
+
+- (void)registerForRemoteNotifications:(FlutterMethodCall*)call result:(FlutterResult)result {
+    isEnabledPushNotifications = YES;
+    UIApplication *application = [UIApplication sharedApplication];
+    if(@available(iOS 10, *)) {
+        UNAuthorizationOptions options =
+            UNAuthorizationOptionAlert |
+            UNAuthorizationOptionBadge |
+            UNAuthorizationOptionSound;
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        [center requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError *error) {
+            // Enable or disable features based on authorization.
+        }];
+    } else {
+        UIUserNotificationType userNotificationTypes =
+            UIUserNotificationTypeAlert |
+            UIUserNotificationTypeBadge |
+            UIUserNotificationTypeSound;
+        UIUserNotificationSettings *settings =
+            [UIUserNotificationSettings settingsForTypes:userNotificationTypes categories:nil];
+        [application registerUserNotificationSettings:settings];
+        
+    }
+}
+
+#pragma mark - UIApplicationDelegate
+
+-(void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    [YMPYandexMetricaPush setDeviceTokenFromData:deviceToken];
+}
+
+-(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    [YMPYandexMetricaPush handleApplicationDidFinishLaunchingWithOptions:launchOptions];
+    return YES;
+}
+
+-(BOOL)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    if([YMPYandexMetricaPush isNotificationRelatedToSDK:userInfo]) {
+        [YMPYandexMetricaPush handleRemoteNotification:userInfo];
+    }
+    return YES;
+}
+
+
+
+#pragma mark - UNUserNotificationCenterDelegate
+
+-(void)userNotificationCenter:(UNUserNotificationCenter *)center
+  openSettingsForNotification:(UNNotification *)notification  API_AVAILABLE(ios(12.0)) {
+    if([YMPYandexMetricaPush isNotificationRelatedToSDK:notification.request.content.userInfo]) {
+        [[YMPYandexMetricaPush userNotificationCenterDelegate] userNotificationCenter:center
+                                                          openSettingsForNotification:notification];
+    }
+}
+ 
+-(void)userNotificationCenter:(UNUserNotificationCenter *)center
+      willPresentNotification:(UNNotification *)notification
+        withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler API_AVAILABLE(ios(10.0)) {
+    if([YMPYandexMetricaPush isNotificationRelatedToSDK:notification.request.content.userInfo]) {
+        [[YMPYandexMetricaPush userNotificationCenterDelegate] userNotificationCenter:center
+                                                              willPresentNotification:notification
+                                                                withCompletionHandler:completionHandler];
+    }
+    
+}
+
+-(void)userNotificationCenter:(UNUserNotificationCenter *)center
+didReceiveNotificationResponse:(UNNotificationResponse *)response
+        withCompletionHandler:(void (^)(void))completionHandler API_AVAILABLE(ios(10.0)) {
+    if([YMPYandexMetricaPush isNotificationRelatedToSDK:response.notification.request.content.userInfo]) {
+        [[YMPYandexMetricaPush userNotificationCenterDelegate] userNotificationCenter:center
+                                                       didReceiveNotificationResponse:response
+                                                                withCompletionHandler:completionHandler];
+    }
+    
 }
 
 @end
