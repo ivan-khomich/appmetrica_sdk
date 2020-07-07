@@ -66,6 +66,13 @@ class AppmetricaSdk {
     _apiKey = apiKey;
   }
 
+  Future<void> activatePushNotificaitions() async {
+    if (_apiKey == null) {
+      throw 'The API key is not set';
+    }
+    await _channel.invokeMethod<void>('registerForRemoteNotifications', <String, dynamic>{});
+  }
+
   /// Sends an event with [name] and message as a set of [attributes] to the AppMetrica server.
   Future<void> reportEvent(
       {@required String name, Map<String, dynamic> attributes}) async {
