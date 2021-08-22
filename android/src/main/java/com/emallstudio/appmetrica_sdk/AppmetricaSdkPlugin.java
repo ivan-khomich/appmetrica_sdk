@@ -362,7 +362,7 @@ public class AppmetricaSdkPlugin extends Activity implements MethodCallHandler {
                 @Override
                 public void onParametersLoaded(Map<String, String> map) {
                     try {
-                        runOnUiThread(new Thread(new MyRunner(map)));
+                        runOnUiThread(new Thread(new MyRunner("requestDeferredDeeplinkParameters", map)));
                     }catch (Exception e) {
                         Log.e(TAG, e.getMessage(), e);
                     }
@@ -371,7 +371,7 @@ public class AppmetricaSdkPlugin extends Activity implements MethodCallHandler {
                 @Override
                 public void onError(Error error, String s) {
                     try{
-                        runOnUiThread(new Thread(new MyRunner(error.toString())));
+                        runOnUiThread(new Thread(new MyRunner("requestDeferredDeeplinkParameters", error.toString())));
                     }catch (Exception e){
                         Log.e(TAG, e.getMessage(), e);
                     }
@@ -392,7 +392,7 @@ public class AppmetricaSdkPlugin extends Activity implements MethodCallHandler {
                 @Override
                 public void onDeeplinkLoaded(@NonNull String s) {
                     try {
-                        runOnUiThread(new Thread(new MyRunner(s)));
+                        runOnUiThread(new Thread(new MyRunner("requestDeferredDeeplink", s)));
                     }catch (Exception e) {
                         Log.e(TAG, e.getMessage(), e);
                     }
@@ -401,7 +401,7 @@ public class AppmetricaSdkPlugin extends Activity implements MethodCallHandler {
                 @Override
                 public void onError(Error error, String s) {
                     try{
-                        runOnUiThread(new Thread(new MyRunner(error.toString())));
+                        runOnUiThread(new Thread(new MyRunner("requestDeferredDeeplink", error.toString())));
                     }catch (Exception e){
                         Log.e(TAG, e.getMessage(), e);
                     }
@@ -410,20 +410,22 @@ public class AppmetricaSdkPlugin extends Activity implements MethodCallHandler {
             YandexMetrica.requestDeferredDeeplink(listener);
         }catch (Exception e){
             Log.e(TAG, e.getMessage(), e);
-            result.error("Error RequestDeferredDeeplinkParameters", e.getMessage(), null);
+            result.error("Error RequestDeferredDeeplink", e.getMessage(), null);
         }
         result.success(null);
     }
 
     private class MyRunner implements Runnable{
-        MyRunner(Object data){
+        MyRunner(String method, Object data){
+            this.method = method;
             this.data = data;
         }
         Object data;
+        String method;
 
         @Override
         public void run() {
-            mChannel.invokeMethod("requestDeferredDeeplinkParameters", data);
+            mChannel.invokeMethod(method, data);
         }
     }
 
