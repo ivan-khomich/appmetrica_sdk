@@ -6,17 +6,15 @@ part of appmetrica_sdk;
 
 /// Appmetrica SDK singleton.
 class AppmetricaSdk {
-  String _apiKey;
-  final MethodChannel _channel;
-  static AppmetricaSdk _instance;
-
   factory AppmetricaSdk() {
-    if (_instance == null) {
-      _instance = AppmetricaSdk.private(const MethodChannel('emallstudio.com/appmetrica_sdk'));
-    }
+    _instance ??= AppmetricaSdk.private(const MethodChannel('emallstudio.com/appmetrica_sdk'));
     return _instance;
   }
   AppmetricaSdk.private(this._channel);
+
+  String _apiKey;
+  final MethodChannel _channel;
+  static AppmetricaSdk _instance;
 
   /// Initializes the library in an application with given parameters.
   ///
@@ -227,6 +225,18 @@ class AppmetricaSdk {
     try {
       _channel.setMethodCallHandler(handler);
       await _channel.invokeMethod<void>('requestDeferredDeeplinkParameters');
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> requestDeferredDeeplink(Future<dynamic> Function(MethodCall call) handler) async {
+    if (_apiKey == null) {
+      throw 'The API key is not set';
+    }
+    try {
+      _channel.setMethodCallHandler(handler);
+      await _channel.invokeMethod<void>('requestDeferredDeeplink');
     } catch (e) {
       rethrow;
     }

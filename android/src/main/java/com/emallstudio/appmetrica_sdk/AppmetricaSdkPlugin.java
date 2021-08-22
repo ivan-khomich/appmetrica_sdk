@@ -11,6 +11,10 @@ import android.content.Context;
 import android.content.Intent;
 
 import android.util.SparseArray;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.Map;
 
 import io.flutter.plugin.common.MethodCall;
@@ -20,6 +24,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.view.FlutterView;
 
+import com.yandex.metrica.DeferredDeeplinkListener;
 import com.yandex.metrica.DeferredDeeplinkParametersListener;
 import com.yandex.metrica.YandexMetrica;
 import com.yandex.metrica.YandexMetricaConfig;
@@ -99,6 +104,9 @@ public class AppmetricaSdkPlugin extends Activity implements MethodCallHandler {
                 break;
             case "requestDeferredDeeplinkParameters":
                 requestDeferredDeeplinkParameters(call, result);
+                break;
+            case "requestDeferredDeeplink":
+                requestDeferredDeeplink(call, result);
                 break;
             default:
               result.notImplemented();
@@ -370,6 +378,36 @@ public class AppmetricaSdkPlugin extends Activity implements MethodCallHandler {
                 }
             };
             YandexMetrica.requestDeferredDeeplinkParameters(listener);
+        }catch (Exception e){
+            Log.e(TAG, e.getMessage(), e);
+            result.error("Error RequestDeferredDeeplinkParameters", e.getMessage(), null);
+        }
+        result.success(null);
+    }
+
+    private void requestDeferredDeeplink(MethodCall call, Result result){
+
+        try {
+            DeferredDeeplinkListener listener = new DeferredDeeplinkListener() {
+                @Override
+                public void onDeeplinkLoaded(@NonNull String s) {
+                    try {
+                        runOnUiThread(new Thread(new MyRunner(s)));
+                    }catch (Exception e) {
+                        Log.e(TAG, e.getMessage(), e);
+                    }
+                }
+
+                @Override
+                public void onError(Error error, String s) {
+                    try{
+                        runOnUiThread(new Thread(new MyRunner(error.toString())));
+                    }catch (Exception e){
+                        Log.e(TAG, e.getMessage(), e);
+                    }
+                }
+            };
+            YandexMetrica.requestDeferredDeeplink(listener);
         }catch (Exception e){
             Log.e(TAG, e.getMessage(), e);
             result.error("Error RequestDeferredDeeplinkParameters", e.getMessage(), null);

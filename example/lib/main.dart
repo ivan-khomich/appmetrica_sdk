@@ -137,6 +137,20 @@ class _MyAppState extends State<MyApp> {
                         });
                       },
                     ),
+                    RaisedButton(
+                      child: const Text('Request deferred deeplink STRING'),
+                      onPressed: () {
+                        /// Sets referral URL for this installation. This might
+                        /// be required to track some specific traffic
+                        /// sources like Facebook.
+                        AppmetricaSdk().requestDeferredDeeplink((MethodCall call) {
+                          if (call.method == 'requestDeferredDeeplink') {
+                            print('requestDeferredDeeplink: ${call.arguments.toString()}');
+                          }
+                          return;
+                        });
+                      },
+                    ),
                   ],
                 ),
               ),

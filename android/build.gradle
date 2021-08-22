@@ -35,7 +35,7 @@ android {
 
 dependencies {
     // AppMetrica SDK.
-    implementation 'com.yandex.android:mobmetricalib:3.10.0'
+    implementation 'com.yandex.android:mobmetricalib:3.18.0'
     implementation "com.yandex.android:mobmetricapushlib:1.5.1"
     implementation "com.google.firebase:firebase-messaging:19.0.1"
     implementation "com.google.android.gms:play-services-base:16.1.0"
