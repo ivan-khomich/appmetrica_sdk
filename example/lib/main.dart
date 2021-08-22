@@ -9,8 +9,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   /// Initializing the AppMetrica SDK.
-  await AppmetricaSdk()
-      .activate(apiKey: 'db2206ed-c61a-43aa-b95c-6912f60bd25e');
+  await AppmetricaSdk().activate(apiKey: 'db2206ed-c61a-43aa-b95c-6912f60bd25e');
 
   runApp(MyApp());
 }
@@ -64,8 +63,7 @@ class _MyAppState extends State<MyApp> {
                 child: Column(
                   children: <Widget>[
                     Container(
-                      child: Text(
-                          'AppMetrica SDK Library version: $_libraryVersion\n'),
+                      child: Text('AppMetrica SDK Library version: $_libraryVersion\n'),
                     ),
                     RaisedButton(
                       child: const Text('Send a custom event'),
@@ -75,57 +73,47 @@ class _MyAppState extends State<MyApp> {
                       },
                     ),
                     RaisedButton(
-                      child: const Text(
-                          'Send a custom event with nested parameters'),
+                      child: const Text('Send a custom event with nested parameters'),
                       onPressed: () {
                         /// Sending a custom event with nested parameters.
-                        AppmetricaSdk().reportEvent(
-                            name: 'Current app statistics',
-                            attributes: <String, dynamic>{
-                              'Application': 'com.company.myapp.awesomeapp',
-                              'Audience': 1000000000,
-                              'Product price in €': 10000000.99,
-                              'nested map': <String, dynamic>{
-                                'strategies': 'Age of Empires',
-                              },
-                            });
+                        AppmetricaSdk().reportEvent(name: 'Current app statistics', attributes: <String, dynamic>{
+                          'Application': 'com.company.myapp.awesomeapp',
+                          'Audience': 1000000000,
+                          'Product price in €': 10000000.99,
+                          'nested map': <String, dynamic>{
+                            'strategies': 'Age of Empires',
+                          },
+                        });
                       },
                     ),
                     RaisedButton(
                       child: const Text('Send user profile attributes'),
                       onPressed: () {
                         /// Sending profile custom string attribute.
-                        AppmetricaSdk().reportUserProfileCustomString(
-                            key: 'string_attribute', value: 'string');
+                        AppmetricaSdk().reportUserProfileCustomString(key: 'string_attribute', value: 'string');
 
                         /// Sending profile custom number attribute.
-                        AppmetricaSdk().reportUserProfileCustomNumber(
-                            key: 'number_attribute', value: 55);
+                        AppmetricaSdk().reportUserProfileCustomNumber(key: 'number_attribute', value: 55);
 
                         /// Sending profile custom boolean attribute.
-                        AppmetricaSdk().reportUserProfileCustomBoolean(
-                            key: 'boolean_attribute', value: true);
+                        AppmetricaSdk().reportUserProfileCustomBoolean(key: 'boolean_attribute', value: true);
 
                         /// Sending profile custom attribute of the counter type.
-                        AppmetricaSdk().reportUserProfileCustomCounter(
-                            key: 'counter_attribute', delta: 1);
+                        AppmetricaSdk().reportUserProfileCustomCounter(key: 'counter_attribute', delta: 1);
 
                         /// Sets the ID of the user profile. Required for predefined
                         /// profile attributes like Name or Notifications enabled.
                         AppmetricaSdk().setUserProfileID(userProfileID: 'id');
 
                         /// Sending profile predefined user name attribute.
-                        AppmetricaSdk()
-                            .reportUserProfileUserName(userName: 'John');
+                        AppmetricaSdk().reportUserProfileUserName(userName: 'John');
 
                         /// Sending profile predefined NotificationsEnabled attribute.
-                        AppmetricaSdk().reportUserProfileNotificationsEnabled(
-                            notificationsEnabled: true);
+                        AppmetricaSdk().reportUserProfileNotificationsEnabled(notificationsEnabled: true);
                       },
                     ),
                     RaisedButton(
-                      child: const Text(
-                          'Send referral URL for this installation'),
+                      child: const Text('Send referral URL for this installation'),
                       onPressed: () {
                         /// Sets referral URL for this installation. This might
                         /// be required to track some specific traffic
@@ -133,6 +121,20 @@ class _MyAppState extends State<MyApp> {
                         AppmetricaSdk().reportReferralUrl(
                           referral: 'fb123456789://example.com/test',
                         );
+                      },
+                    ),
+                    RaisedButton(
+                      child: const Text('Request deferred deeplink parameters'),
+                      onPressed: () {
+                        /// Sets referral URL for this installation. This might
+                        /// be required to track some specific traffic
+                        /// sources like Facebook.
+                        AppmetricaSdk().requestDeferredDeeplinkParameters((MethodCall call) {
+                          if (call.method == 'requestDeferredDeeplinkParameters') {
+                            print('requestDeferredDeeplinkParameters: ${call.arguments.toString()}');
+                          }
+                          return;
+                        });
                       },
                     ),
                   ],

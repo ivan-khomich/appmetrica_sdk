@@ -20,8 +20,10 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.view.FlutterView;
 
+import com.yandex.metrica.DeferredDeeplinkParametersListener;
 import com.yandex.metrica.YandexMetrica;
 import com.yandex.metrica.YandexMetricaConfig;
+import com.yandex.metrica.impl.ob.uu;
 import com.yandex.metrica.profile.Attribute;
 import com.yandex.metrica.profile.StringAttribute;
 import com.yandex.metrica.profile.UserProfile;
@@ -33,11 +35,13 @@ public class AppmetricaSdkPlugin implements MethodCallHandler {
     private static final String TAG = "AppmetricaSdkPlugin";
     private Context mContext;
     private Application mApplication;
+    private static MethodChannel mChannel;
 
     /** Plugin registration. */
     public static void registerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "emallstudio.com/appmetrica_sdk");
         channel.setMethodCallHandler(new AppmetricaSdkPlugin(registrar));
+        mChannel = channel;
     }
 
     private AppmetricaSdkPlugin(Registrar registrar) {
@@ -90,6 +94,9 @@ public class AppmetricaSdkPlugin implements MethodCallHandler {
                 break;
             case "registerRemoteNotifications":
                 registerForRemoteNotifications(call, result);
+                break;
+            case "requestDeferredDeeplinkParameters":
+                requestDeferredDeeplinkParameters(call, result);
                 break;
             default:
               result.notImplemented();
@@ -335,6 +342,27 @@ public class AppmetricaSdkPlugin implements MethodCallHandler {
 
     private void registerForRemoteNotifications(MethodCall call, Result result) {
 
+        result.success(null);
+    }
+
+    private void requestDeferredDeeplinkParameters(MethodCall call, Result result){
+        try {
+            DeferredDeeplinkParametersListener listener = new DeferredDeeplinkParametersListener() {
+                @Override
+                public void onParametersLoaded(Map<String, String> map) {
+                    mChannel.invokeMethod("requestDeferredDeeplinkParameters", map);
+                }
+
+                @Override
+                public void onError(Error error, String s) {
+                    mChannel.invokeMethod("requestDeferredDeeplinkParameters", error.toString());
+                }
+            };
+            YandexMetrica.requestDeferredDeeplinkParameters(listener);
+        }catch (Exception e){
+            Log.e(TAG, e.getMessage(), e);
+            result.error("Error RequestDeferredDeeplinkParameters", e.getMessage(), null);
+        }
         result.success(null);
     }
 }
