@@ -149,6 +149,17 @@ class AppmetricaSdk {
       'userName': userName,
     });
   }
+  
+  
+    /// Request device id [AppMetricaDeviceID] profile attribute to the AppMetrica server.
+  Future<void> requestAppMetricaDeviceID({@required String AppMetricaDeviceID}) async {
+    if (_apiKey == null) {
+      throw 'The API key is not set';
+    }
+    await _channel.invokeMethod<void>('requestAppMetricaDeviceID', <String, dynamic>{
+      'AppMetricaDeviceID': AppMetricaDeviceID,
+    });
+  }
 
   /// Sends predefined [notificationsEnabled] profile attribute to the AppMetrica server.
   Future<void> reportUserProfileNotificationsEnabled({@required bool notificationsEnabled}) async {
